@@ -1,0 +1,6 @@
+{
+  "watch": ["src", ".env"],
+  "ext": ".ts,.js",
+  "ignore": ["logs", "src/**/*.{spec,test}.ts"],
+  "exec": "ts-node --files ./src/app.ts --trace-warnings"
+}
