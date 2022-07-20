@@ -1,8 +1,15 @@
 import "reflect-metadata";
 import express, { NextFunction, Request, Response } from "express";
 import { InversifyExpressServer } from "inversify-express-utils";
+import * as Sentry from "@sentry/node";
 import container from "./container/container";
 import { HttpException } from "./shared/error/http.exception";
+import { webhookWithError } from "./shared/api/discord/webhook-with-error";
+import config from "./config";
+
+Sentry.init({
+  dsn: config.sentry.dsn,
+});
 
 const PORT = 8080;
 
@@ -10,19 +17,37 @@ const server = new InversifyExpressServer(container);
 
 server
   .setConfig((app) => {
+    app.use(Sentry.Handlers.requestHandler());
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
   })
   .setErrorConfig((app) => {
+    // catch 404
     app.use((req: Request, res: Response, next: NextFunction) => {
       return res.status(404).end();
     });
 
+    // sentry
+    app.use(
+      Sentry.Handlers.errorHandler({
+        shouldHandleError(err) {
+          if (!err.status) {
+            return true;
+          }
+          return false;
+        },
+      })
+    );
+
+    // exception
     app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
       if (err instanceof HttpException) {
         const { name, status, message, info } = err;
         return res.status(status).json({ name, message, info });
       }
+
+      // server error
+      webhookWithError(err);
       return res.status(500).json({ message: "server error" });
     });
   })
