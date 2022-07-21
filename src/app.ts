@@ -4,7 +4,7 @@ import { InversifyExpressServer } from "inversify-express-utils";
 import * as Sentry from "@sentry/node";
 import container from "./container/container";
 import { HttpException } from "./shared/error/http.exception";
-import { webhookWithError } from "./shared/api/discord/webhook-with-error";
+import { pushError } from "./shared/api/discord/push-error";
 import config from "./config";
 
 Sentry.init({
@@ -47,7 +47,7 @@ server
       }
 
       // server error
-      webhookWithError(err);
+      pushError(err);
       return res.status(500).json({ message: "server error" });
     });
   })
