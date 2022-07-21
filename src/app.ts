@@ -3,6 +3,8 @@ import express, { NextFunction, Request, Response } from "express";
 import { InversifyExpressServer } from "inversify-express-utils";
 import * as Sentry from "@sentry/node";
 import container from "./container/container";
+import { IApiService } from "./shared/api/interface/IApi.service";
+import { TYPES } from "./container/types";
 import { HttpException } from "./shared/error/http.exception";
 import { pushError } from "./shared/api/discord/push-error";
 import config from "./config";
@@ -14,6 +16,8 @@ Sentry.init({
 const PORT = 8080;
 
 const server = new InversifyExpressServer(container);
+
+const apiWebhookService = container.get<IApiService>(TYPES.IApiService);
 
 server
   .setConfig((app) => {
@@ -47,6 +51,7 @@ server
       }
 
       // server error
+      apiWebhookService.pushError(err);
       pushError(err);
       return res.status(500).json({ message: "server error" });
     });
