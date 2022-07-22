@@ -9,6 +9,7 @@ const isValid = (key: string, defaultValue: any = undefined) => {
 };
 
 export default {
+  port: isValid("PORT", 8080),
   sentry: {
     dsn: isValid("SENTRY_DSN"),
   },

@@ -13,8 +13,6 @@ Sentry.init({
   dsn: config.sentry.dsn,
 });
 
-const PORT = 8080;
-
 const server = new InversifyExpressServer(container);
 
 const apiWebhookService = container.get<IApiService>(TYPES.IApiService);
@@ -57,4 +55,4 @@ server
     });
   })
   .build()
-  .listen(PORT, () => console.log(`server on ${PORT}`));
+  .listen(config.port, () => console.log(`server on ${config.port}`));
